@@ -70,7 +70,11 @@ build/binutils.extracted: downloads/${BINUTILS_FILE}
 	cd build && tar -xf ../downloads/${BINUTILS_FILE}
 	touch $@
 
-build/binutils.built: build/binutils.extracted
+build/binutils.patched : build/binutils.extracted
+	(cd build/binutils* && patch -p0 ) < ${CURDIR}/avr-size.patch
+	touch $@
+
+build/binutils.built: build/binutils.patched
 	mkdir -p ${OUTDIR}
 	cd build/binutils* && mkdir -p build
 	cd build/binutils*/build && ../configure --prefix=${OUTDIR} --target=avr --disable-nls
