@@ -1,0 +1,3 @@
+# Environment file for z80-board-tools
+
+export PATH=`pwd`/avr-toolchain/outdir/bin:`pwd`/openocd/outdir/bin:$PATH
