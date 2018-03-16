@@ -32,7 +32,7 @@ build/libusb.extracted: downloads/${LIBUSB_FILE}
 
 build/libusb.built: build/libusb.extracted
 	mkdir -p ${OUTDIR}
-	cd build/libusb* && mkdir -p build
+	cd build/libusb*/ && mkdir -p build
 	cd build/libusb*/build && ../configure --prefix=${OUTDIR}
 	cd build/libusb*/build && ${MAKE}
 	cd build/libusb*/build && ${MAKE} check
@@ -51,7 +51,7 @@ build/libftdi.extracted: downloads/${LIBFTDI_FILE}
 
 build/libftdi.built: build/libftdi.extracted
 	mkdir -p ${OUTDIR}
-	cd build/libftdi1-* && mkdir -p build
+	cd build/libftdi1-*/ && mkdir -p build
 	cd build/libftdi1-*/build && PKG_CONFIG_PATH=${OUTDIR}/lib/pkgconfig cmake .. -DCMAKE_INSTALL_PREFIX:PATH=${OUTDIR}
 	cd build/libftdi1-*/build && ${MAKE}
 	cd build/libftdi1-*/build && ${MAKE} check
@@ -75,7 +75,7 @@ build/openocd.extracted: downloads/${OPENOCD_FILE} build/libusb.built build/libf
 
 build/openocd.built: build/openocd.extracted
 	mkdir -p ${OUTDIR}
-	cd build/openocd* && mkdir -p build
+	cd build/openocd*/ && mkdir -p build
 	cd build/openocd*/build && ../configure --prefix=${OUTDIR} \
 		PKG_CONFIG_PATH=${OUTDIR}/lib/pkgconfig
 	cd build/openocd*/build && ${MAKE}

@@ -71,12 +71,12 @@ build/binutils.extracted: downloads/${BINUTILS_FILE}
 	touch $@
 
 build/binutils.patched : build/binutils.extracted
-	(cd build/binutils* && patch -p0 ) < ${CURDIR}/avr-size.patch
+	(cd build/binutils*/ && patch -p0 ) < ${CURDIR}/avr-size.patch
 	touch $@
 
 build/binutils.built: build/binutils.patched
 	mkdir -p ${OUTDIR}
-	cd build/binutils* && mkdir -p build
+	cd build/binutils*/ && mkdir -p build
 	cd build/binutils*/build && ../configure --prefix=${OUTDIR} --target=avr --disable-nls
 	cd build/binutils*/build && ${MAKE}
 	cd build/binutils*/build && ${MAKE} install
@@ -94,7 +94,7 @@ build/gmp.extracted: downloads/${GMP_FILE}
 
 build/gmp.built: build/gmp.extracted
 	mkdir -p ${OUTDIR}
-	cd build/gmp* && mkdir -p build
+	cd build/gmp*/ && mkdir -p build
 	cd build/gmp*/build && ../configure --prefix=${OUTDIR}
 	cd build/gmp*/build && ${MAKE}
 	cd build/gmp*/build && ${MAKE} check
@@ -112,7 +112,7 @@ build/mpfr.extracted: downloads/${MPFR_FILE}
 	touch $@
 
 build/mpfr.built: build/mpfr.extracted build/gmp.built
-	cd build/mpfr* && mkdir -p build
+	cd build/mpfr*/ && mkdir -p build
 	cd build/mpfr*/build && ../configure --prefix=${OUTDIR} --with-gmp=${OUTDIR}
 	cd build/mpfr*/build && ${MAKE}
 	cd build/mpfr*/build && ${MAKE} check
@@ -130,7 +130,7 @@ build/mpc.extracted: downloads/${MPC_FILE}
 	touch $@
 
 build/mpc.built: build/mpc.extracted build/gmp.built build/mpfr.built
-	cd build/mpc* && mkdir -p build
+	cd build/mpc*/ && mkdir -p build
 	cd build/mpc*/build && ../configure --prefix=${OUTDIR} --with-gmp=${OUTDIR} --with-mpfr=${OUTDIR}
 	cd build/mpc*/build && ${MAKE}
 	cd build/mpc*/build && ${MAKE} check
@@ -148,7 +148,7 @@ build/gcc.extracted: downloads/${GCC_FILE}
 	touch $@
 
 build/gcc.built: build/gcc.extracted build/gmp.built build/mpfr.built build/mpc.built build/binutils.built
-	cd build/gcc* && mkdir -p build
+	cd build/gcc*/ && mkdir -p build
 	cd build/gcc*/build && ../configure --prefix=${OUTDIR} --with-gmp=${OUTDIR} \
 		--with-mpfr=${OUTDIR} --with-mpc=${OUTDIR} --target=avr --enable-languages="c,c++" \
 		--disable-nls --disable-libssp --with-dwarf2
@@ -186,7 +186,7 @@ build/libusb.extracted: downloads/${LIBUSB_FILE}
 
 build/libusb.built: build/libusb.extracted
 	mkdir -p ${OUTDIR}
-	cd build/libusb* && mkdir -p build
+	cd build/libusb*/ && mkdir -p build
 	cd build/libusb*/build && ../configure --prefix=${OUTDIR}
 	cd build/libusb*/build && ${MAKE}
 	cd build/libusb*/build && ${MAKE} check
@@ -209,7 +209,7 @@ AVRDUDE_LDFLAGS="${LDFLAGS} -I${OUTDIR}/include -I${OUTDIR}/include -L${OUTDIR}/
 
 build/avrdude.built: build/avrdude.extracted build/libusb.built
 	mkdir -p ${OUTDIR}
-	cd build/avrdude* && mkdir -p build
+	cd build/avrdude*/ && mkdir -p build
 	cd build/avrdude*/build && CFLAGS=${AVRDUDE_CFLAGS} CPPFLAGS=${AVRDUDE_CFLAGS} \
 		CXXFLAGS=${AVRDUDE_CXXFLAGS} LDFLAGS=${AVRDUDE_LDFLAGS} ../configure --prefix=${OUTDIR}
 	cd build/avrdude*/build && CFLAGS=${AVRDUDE_CFLAGS} CPPFLAGS=${AVRDUDE_CFLAGS} \
