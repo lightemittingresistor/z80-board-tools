@@ -54,7 +54,7 @@ build/libftdi.built: build/libftdi.extracted
 	cd build/libftdi1-*/ && mkdir -p build
 	cd build/libftdi1-*/build && PKG_CONFIG_PATH=${OUTDIR}/lib/pkgconfig cmake .. -DCMAKE_INSTALL_PREFIX:PATH=${OUTDIR}
 	cd build/libftdi1-*/build && ${MAKE}
-	cd build/libftdi1-*/build && ${MAKE} check
+	#cd build/libftdi1-*/build && ${MAKE} check
 	cd build/libftdi1-*/build && ${MAKE} install
 	touch $@
 
