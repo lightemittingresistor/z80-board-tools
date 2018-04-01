@@ -71,6 +71,12 @@ OPENOCD_LDFLAGS="${LDFLAGS} -I${OUTDIR}/include -I${OUTDIR}/include -L${OUTDIR}/
 build/openocd.extracted: downloads/${OPENOCD_FILE} build/libusb.built build/libftdi.built
 	mkdir -p build
 	cd build && tar -xf ../downloads/${OPENOCD_FILE}
+	cd build/openocd* && patch -p1 < ../../0001-Add-fallthrough-comments.patch
+	cd build/openocd* && patch -p1 < ../../0002-Workaround-new-warnings-generated-by-GCC-7.patch
+	cd build/openocd* && patch -p1 < ../../0003-armv7a-Add-missing-break-to-fix-fallthrough-warning.patch
+	cd build/openocd* && patch -p1 < ../../0004-Fix-overflow-warning.patch
+	cd build/openocd* && patch -p1 < ../../0005-command-Move-the-fall-through-comment-to-right-scope.patch
+
 	touch $@
 
 build/openocd.built: build/openocd.extracted
