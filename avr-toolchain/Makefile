@@ -23,7 +23,27 @@ LIBUSB_FILE=libusb-1.0.21.tar.bz2
 AVRDUDE_FILE=avrdude-6.3.tar.gz
 
 OUTDIR=$(CURDIR)/outdir
+BUILDDIR=$(CURDIR)/build
+TARGETNAME=z80-board-tools
 export PATH := ${OUTDIR}/bin:$(PATH)
+
+ifdef BUILD_WIN64
+CROSS=1
+CROSS_TARGET=x86_64-w64-mingw32
+CONFIG_EXTRAS=-host=${CROSS_TARGET} --enable-shared --disable-static
+OUTDIR:=${OUTDIR}-w64
+BUILDDIR:=${BUILDDIR}-w64
+TARGETNAME:=${TARGETNAME}-win64
+endif
+
+ifdef BUILD_WIN32
+CROSS=1
+CROSS_TARGET=i686-w64-mingw32
+CONFIG_EXTRAS=-host=${CROSS_TARGET} --enable-static --disable-shared
+OUTDIR:=${OUTDIR}-w32
+BUILDDIR:=${BUILDDIR}-w32
+TARGETNAME:=${TARGETNAME}-win32
+endif
 
 #dummy target for all
 all: binutils gcc libc avrdude
@@ -65,172 +85,188 @@ downloads/${AVRDUDE_FILE} :
 # binutils
 ###################
 
-build/binutils.extracted: downloads/${BINUTILS_FILE}
-	mkdir -p build
-	cd build && tar -xf ../downloads/${BINUTILS_FILE}
+${BUILDDIR}/binutils.extracted: downloads/${BINUTILS_FILE}
+	mkdir -p ${BUILDDIR}
+	cd ${BUILDDIR} && tar -xf ../downloads/${BINUTILS_FILE}
 	touch $@
 
-build/binutils.patched : build/binutils.extracted
-	(cd build/binutils*/ && patch -p0 ) < ${CURDIR}/avr-size.patch
+${BUILDDIR}/binutils.patched : ${BUILDDIR}/binutils.extracted
+	(cd ${BUILDDIR}/binutils*/ && patch -p0 ) < ${CURDIR}/avr-size.patch
 	touch $@
 
-build/binutils.built: build/binutils.patched
+${BUILDDIR}/binutils.built: ${BUILDDIR}/binutils.patched
 	mkdir -p ${OUTDIR}
-	cd build/binutils*/ && mkdir -p build
-	cd build/binutils*/build && ../configure --prefix=${OUTDIR} --target=avr --disable-nls
-	cd build/binutils*/build && ${MAKE}
-	cd build/binutils*/build && ${MAKE} install
+	cd ${BUILDDIR}/binutils*/ && mkdir -p build
+	cd ${BUILDDIR}/binutils*/build && ../configure ${CONFIG_EXTRAS} --prefix=${OUTDIR} --target=avr --disable-nls
+	cd ${BUILDDIR}/binutils*/build && ${MAKE}
+	cd ${BUILDDIR}/binutils*/build && ${MAKE} install
 	touch $@
 
-binutils: build/binutils.built
+binutils: ${BUILDDIR}/binutils.built
 
 ###################
 # gmp
 ###################
-build/gmp.extracted: downloads/${GMP_FILE}
-	mkdir -p build
-	cd build && tar -xf ../downloads/${GMP_FILE}
+${BUILDDIR}/gmp.extracted: downloads/${GMP_FILE}
+	mkdir -p ${BUILDDIR}
+	cd ${BUILDDIR} && tar -xf ../downloads/${GMP_FILE}
 	touch $@
 
-build/gmp.built: build/gmp.extracted
+${BUILDDIR}/gmp.built: ${BUILDDIR}/gmp.extracted
 	mkdir -p ${OUTDIR}
-	cd build/gmp*/ && mkdir -p build
-	cd build/gmp*/build && ../configure --prefix=${OUTDIR}
-	cd build/gmp*/build && ${MAKE}
-	cd build/gmp*/build && ${MAKE} check
-	cd build/gmp*/build && ${MAKE} install
+	cd ${BUILDDIR}/gmp*/ && mkdir -p build
+	cd ${BUILDDIR}/gmp*/build && ../configure ${CONFIG_EXTRAS} --prefix=${OUTDIR}
+	cd ${BUILDDIR}/gmp*/build && ${MAKE}
+	if [ "${CROSS}" != "1" ]; \
+	then \
+		cd ${BUILDDIR}/gmp*/build && ${MAKE} check; \
+	fi;
+	cd ${BUILDDIR}/gmp*/build && ${MAKE} install
 	touch $@
 
-gmp: build/gmp.built
+gmp: ${BUILDDIR}/gmp.built
 
 ###################
 # mpfr
 ###################
-build/mpfr.extracted: downloads/${MPFR_FILE}
-	mkdir -p build
-	cd build && tar -xf ../downloads/${MPFR_FILE}
+${BUILDDIR}/mpfr.extracted: downloads/${MPFR_FILE}
+	mkdir -p ${BUILDDIR}
+	cd ${BUILDDIR} && tar -xf ../downloads/${MPFR_FILE}
 	touch $@
 
-build/mpfr.built: build/mpfr.extracted build/gmp.built
-	cd build/mpfr*/ && mkdir -p build
-	cd build/mpfr*/build && ../configure --prefix=${OUTDIR} --with-gmp=${OUTDIR}
-	cd build/mpfr*/build && ${MAKE}
-	cd build/mpfr*/build && ${MAKE} check
-	cd build/mpfr*/build && ${MAKE} install
+${BUILDDIR}/mpfr.built: ${BUILDDIR}/mpfr.extracted ${BUILDDIR}/gmp.built
+	cd ${BUILDDIR}/mpfr*/ && mkdir -p build
+	cd ${BUILDDIR}/mpfr*/build && ../configure ${CONFIG_EXTRAS} --prefix=${OUTDIR} --with-gmp=${OUTDIR}
+	cd ${BUILDDIR}/mpfr*/build && ${MAKE}
+	if [ "${CROSS}" != "1" ]; \
+	then \
+		cd ${BUILDDIR}/mpfr*/build && ${MAKE} check; \
+	fi;
+	cd ${BUILDDIR}/mpfr*/build && ${MAKE} install
 	touch $@
 
-mpfr: build/mpfr.built
+mpfr: ${BUILDDIR}/mpfr.built
 
 ###################
 # mpc
 ###################
-build/mpc.extracted: downloads/${MPC_FILE}
-	mkdir -p build
-	cd build && tar -xf ../downloads/${MPC_FILE}
+${BUILDDIR}/mpc.extracted: downloads/${MPC_FILE}
+	mkdir -p ${BUILDDIR}
+	cd ${BUILDDIR} && tar -xf ../downloads/${MPC_FILE}
 	touch $@
 
-build/mpc.built: build/mpc.extracted build/gmp.built build/mpfr.built
-	cd build/mpc*/ && mkdir -p build
-	cd build/mpc*/build && ../configure --prefix=${OUTDIR} --with-gmp=${OUTDIR} --with-mpfr=${OUTDIR}
-	cd build/mpc*/build && ${MAKE}
-	cd build/mpc*/build && ${MAKE} check
-	cd build/mpc*/build && ${MAKE} install
+${BUILDDIR}/mpc.built: ${BUILDDIR}/mpc.extracted ${BUILDDIR}/gmp.built ${BUILDDIR}/mpfr.built
+	cd ${BUILDDIR}/mpc*/ && mkdir -p build
+	cd ${BUILDDIR}/mpc*/build && ../configure ${CONFIG_EXTRAS} --prefix=${OUTDIR} --with-gmp=${OUTDIR} --with-mpfr=${OUTDIR}
+	cd ${BUILDDIR}/mpc*/build && ${MAKE}
+	if [ "${CROSS}" != "1" ]; \
+	then \
+		cd ${BUILDDIR}/mpc*/build && ${MAKE} check; \
+	fi;
+	cd ${BUILDDIR}/mpc*/build && ${MAKE} install
 	touch $@
 
-mpc: build/mpc.built
+mpc: ${BUILDDIR}/mpc.built
 
 ###################
 # gcc
 ###################
-build/gcc.extracted: downloads/${GCC_FILE}
-	mkdir -p build
-	cd build && tar -xf ../downloads/${GCC_FILE}
+${BUILDDIR}/gcc.extracted: downloads/${GCC_FILE}
+	mkdir -p ${BUILDDIR}
+	cd ${BUILDDIR} && tar -xf ../downloads/${GCC_FILE}
 	touch $@
 
-build/gcc.built: build/gcc.extracted build/gmp.built build/mpfr.built build/mpc.built build/binutils.built
-	cd build/gcc*/ && mkdir -p build
-	cd build/gcc*/build && ../configure --prefix=${OUTDIR} --with-gmp=${OUTDIR} \
+${BUILDDIR}/gcc.built: ${BUILDDIR}/gcc.extracted ${BUILDDIR}/gmp.built ${BUILDDIR}/mpfr.built ${BUILDDIR}/mpc.built ${BUILDDIR}/binutils.built
+	cd ${BUILDDIR}/gcc*/ && mkdir -p build
+	cd ${BUILDDIR}/gcc*/build && ../configure ${CONFIG_EXTRAS} --prefix=${OUTDIR} --with-gmp=${OUTDIR} \
 		--with-mpfr=${OUTDIR} --with-mpc=${OUTDIR} --target=avr --enable-languages="c,c++" \
 		--disable-nls --disable-libssp --with-dwarf2
-	cd build/gcc*/build && ${MAKE}
-	cd build/gcc*/build && ${MAKE} install
+	cd ${BUILDDIR}/gcc*/build && ${MAKE}
+	cd ${BUILDDIR}/gcc*/build && ${MAKE} install
 	touch $@
 
-gcc: build/gcc.built
+gcc: ${BUILDDIR}/gcc.built
 
 ###################
 # libc
 ###################
-build/libc.extracted: downloads/${LIBC_FILE}
-	mkdir -p build
-	cd build && tar -xf ../downloads/${LIBC_FILE}
+${BUILDDIR}/libc.extracted: downloads/${LIBC_FILE}
+	mkdir -p ${BUILDDIR}
+	cd ${BUILDDIR} && tar -xf ../downloads/${LIBC_FILE}
 	touch $@
 
-build/libc.built: build/libc.extracted build/gcc.built
+${BUILDDIR}/libc.built: ${BUILDDIR}/libc.extracted ${BUILDDIR}/gcc.built
 	mkdir -p ${OUTDIR}
-	cd build/avr-libc* && mkdir -p build
-	cd build/avr-libc*/build && ../configure --prefix=${OUTDIR} --host=avr
-	cd build/avr-libc*/build && ${MAKE}
-	cd build/avr-libc*/build && ${MAKE} install
+	cd ${BUILDDIR}/avr-libc* && mkdir -p build
+	cd ${BUILDDIR}/avr-libc*/build && ../configure --prefix=${OUTDIR} --host=avr
+	cd ${BUILDDIR}/avr-libc*/build && ${MAKE}
+	cd ${BUILDDIR}/avr-libc*/build && ${MAKE} install
 	touch $@
 
-libc: build/libc.built
+libc: ${BUILDDIR}/libc.built
 
 ###################
 # libusb
 ###################
-build/libusb.extracted: downloads/${LIBUSB_FILE}
-	mkdir -p build
-	cd build && tar -xf ../downloads/${LIBUSB_FILE}
+${BUILDDIR}/libusb.extracted: downloads/${LIBUSB_FILE}
+	mkdir -p ${BUILDDIR}
+	cd ${BUILDDIR} && tar -xf ../downloads/${LIBUSB_FILE}
 	touch $@
 
-build/libusb.built: build/libusb.extracted
+${BUILDDIR}/libusb.built: ${BUILDDIR}/libusb.extracted
 	mkdir -p ${OUTDIR}
-	cd build/libusb*/ && mkdir -p build
-	cd build/libusb*/build && ../configure --prefix=${OUTDIR}
-	cd build/libusb*/build && ${MAKE}
-	cd build/libusb*/build && ${MAKE} check
-	cd build/libusb*/build && ${MAKE} install
+	cd ${BUILDDIR}/libusb*/ && mkdir -p build
+	cd ${BUILDDIR}/libusb*/build && ../configure ${CONFIG_EXTRAS} --prefix=${OUTDIR}
+	cd ${BUILDDIR}/libusb*/build && ${MAKE}
+	if [ "${CROSS}" != "1" ]; \
+	then \
+		cd ${BUILDDIR}/libusb*/build && ${MAKE} check; \
+	fi;
+	cd ${BUILDDIR}/libusb*/build && ${MAKE} install
 	touch $@
 
-libusb: build/libusb.built
+libusb: ${BUILDDIR}/libusb.built
 
 ###################
 # avrdude
 ###################
-build/avrdude.extracted: downloads/${AVRDUDE_FILE}
-	mkdir -p build
-	cd build && tar -xf ../downloads/${AVRDUDE_FILE}
+${BUILDDIR}/avrdude.extracted: downloads/${AVRDUDE_FILE}
+	mkdir -p ${BUILDDIR}
+	cd ${BUILDDIR} && tar -xf ../downloads/${AVRDUDE_FILE}
 	touch $@
 
 AVRDUDE_CFLAGS="${CFLAGS} -I${OUTDIR}/include -I${OUTDIR}/include/libusb-1.0/ -L${OUTDIR}/lib"
 AVRDUDE_CXXFLAGS="${CXXFLAGS} -I${OUTDIR}/include -I${OUTDIR}/include/libusb-1.0/ -L${OUTDIR}/lib"
 AVRDUDE_LDFLAGS="${LDFLAGS} -I${OUTDIR}/include -I${OUTDIR}/include -L${OUTDIR}/lib"
 
-build/avrdude.built: build/avrdude.extracted build/libusb.built
+${BUILDDIR}/avrdude.built: ${BUILDDIR}/avrdude.extracted ${BUILDDIR}/libusb.built
 	mkdir -p ${OUTDIR}
-	cd build/avrdude*/ && mkdir -p build
-	cd build/avrdude*/build && CFLAGS=${AVRDUDE_CFLAGS} CPPFLAGS=${AVRDUDE_CFLAGS} \
-		CXXFLAGS=${AVRDUDE_CXXFLAGS} LDFLAGS=${AVRDUDE_LDFLAGS} ../configure --prefix=${OUTDIR}
-	cd build/avrdude*/build && CFLAGS=${AVRDUDE_CFLAGS} CPPFLAGS=${AVRDUDE_CFLAGS} \
+	cd ${BUILDDIR}/avrdude*/ && mkdir -p build
+	cd ${BUILDDIR}/avrdude*/build && CFLAGS=${AVRDUDE_CFLAGS} CPPFLAGS=${AVRDUDE_CFLAGS} \
+		CXXFLAGS=${AVRDUDE_CXXFLAGS} LDFLAGS=${AVRDUDE_LDFLAGS} ../configure ${CONFIG_EXTRAS} --prefix=${OUTDIR}
+	cd ${BUILDDIR}/avrdude*/build && CFLAGS=${AVRDUDE_CFLAGS} CPPFLAGS=${AVRDUDE_CFLAGS} \
 		CXXFLAGS=${AVRDUDE_CXXFLAGS} LDFLAGS=${AVRDUDE_LDFLAGS} ${MAKE}
-	cd build/avrdude*/build && CFLAGS=${AVRDUDE_CFLAGS} CPPFLAGS=${AVRDUDE_CFLAGS} \
+	cd ${BUILDDIR}/avrdude*/build && CFLAGS=${AVRDUDE_CFLAGS} CPPFLAGS=${AVRDUDE_CFLAGS} \
 		CXXFLAGS=${AVRDUDE_CXXFLAGS} LDFLAGS=${AVRDUDE_LDFLAGS} ${MAKE} check
-	cd build/avrdude*/build && CFLAGS=${AVRDUDE_CFLAGS} CPPFLAGS=${AVRDUDE_CFLAGS} \
+	cd ${BUILDDIR}/avrdude*/build && CFLAGS=${AVRDUDE_CFLAGS} CPPFLAGS=${AVRDUDE_CFLAGS} \
 		CXXFLAGS=${AVRDUDE_CXXFLAGS} LDFLAGS=${AVRDUDE_LDFLAGS} ${MAKE} install
 	touch $@
 
-avrdude: build/avrdude.built
+avrdude: ${BUILDDIR}/avrdude.built
 
 ##################
 # clean
 ##################
 
 clean:
-	rm -rf build
-	rm -rf outdir
+	rm -rf ${BUILDDIR}
+
+clean-all: clean
+	rm -rf ${OUTDIR}
 
 clean-downloads: clean
 	rm -rf downloads
 
-
+zip: all
+	cp /usr/${CROSS_TARGET}/sys-root/mingw/bin/lib*.dll ${OUTDIR}/bin
+	cd ${OUTDIR} && zip -r -6 ../${TARGETNAME}.zip * 
