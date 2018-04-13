@@ -10,9 +10,11 @@ all: zasm
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Linux)
     ZASM_DIR=Linux
+    QMAKE=qmake-qt5
 endif
 ifeq ($(UNAME_S),Darwin)
     ZASM_DIR=OSX
+    QMAKE=qmake
 endif
 
 download/zasm-cloned:
@@ -24,6 +26,7 @@ download/zasm-cloned:
 download/zasm-libs-cloned:
 	mkdir -p download
 	cd download && git clone ${ZASM_LIBS_REPO} Libraries
+	cd download/Libraries && git checkout zasm-4.0
 	touch $@
 
 download/zasm-libsfixed: download/zasm-cloned download/zasm-libs-cloned
@@ -42,7 +45,7 @@ build/zasm-extracted: download/zasm.tar.gz
 
 build/zasm-built: build/zasm-extracted
 	mkdir -p ${OUTDIR}/bin
-	cd build/zasm-src/${ZASM_DIR} && qmake PREFIX=${OUTDIR}
+	cd build/zasm-src/${ZASM_DIR} && ${QMAKE} PREFIX=${OUTDIR}
 	cd build/zasm-src/${ZASM_DIR} && make
 	cp build/zasm-src/${ZASM_DIR}/zasm ${OUTDIR}/bin
 	touch $@
