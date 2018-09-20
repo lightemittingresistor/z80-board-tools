@@ -9,7 +9,7 @@ GMP_URL="https://gmplib.org/download/gmp/"
 MPFR_URL="http://www.mpfr.org/mpfr-current/"
 MPC_URL="https://ftp.gnu.org/gnu/mpc/"
 LIBC_URL="http://download.savannah.gnu.org/releases/avr-libc/"
-LIBUSB_URL="https://github.com/libusb/libusb/releases/download/v1.0.21/"
+LIBUSB_URL="https://github.com/libusb/libusb/releases/download/v1.0.22/"
 AVRDUDE_URL="http://download.savannah.gnu.org/releases/avrdude/"
 
 #filenames for downloads

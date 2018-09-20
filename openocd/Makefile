@@ -1,9 +1,9 @@
 OPENOCD_URL=http://downloads.sourceforge.net/openocd/
-LIBUSB_URL=https://github.com/libusb/libusb/releases/download/v1.0.21/
+LIBUSB_URL=https://github.com/libusb/libusb/releases/download/v1.0.22/
 LIBFTDI_URL=https://www.intra2net.com/en/developer/libftdi/download/
 
 OPENOCD_FILE=openocd-0.10.0.tar.bz2
-LIBUSB_FILE=libusb-1.0.21.tar.bz2
+LIBUSB_FILE=libusb-1.0.22.tar.bz2
 LIBFTDI_FILE=libftdi1-1.4.tar.bz2
 
 OUTDIR=$(CURDIR)/outdir
@@ -83,7 +83,7 @@ build/openocd.built: build/openocd.extracted
 	mkdir -p ${OUTDIR}
 	cd build/openocd*/ && mkdir -p build
 	cd build/openocd*/build && ../configure --prefix=${OUTDIR} \
-		PKG_CONFIG_PATH=${OUTDIR}/lib/pkgconfig
+		PKG_CONFIG_PATH=${OUTDIR}/lib/pkgconfig --disable-werror
 	cd build/openocd*/build && ${MAKE}
 	cd build/openocd*/build && ${MAKE} install
 	touch $@
