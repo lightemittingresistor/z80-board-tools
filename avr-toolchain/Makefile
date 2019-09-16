@@ -4,22 +4,22 @@
 
 #URL bases for downloads
 BINUTILS_URL="http://ftp.gnu.org/gnu/binutils/"
-GCC_URL="ftp://ftp.mirrorservice.org/sites/sourceware.org/pub/gcc/releases/gcc-8.2.0/"
+GCC_URL="ftp://ftp.mirrorservice.org/sites/sourceware.org/pub/gcc/releases/gcc-9.2.0/"
 GMP_URL="https://gmplib.org/download/gmp/"
 MPFR_URL="http://www.mpfr.org/mpfr-current/"
 MPC_URL="https://ftp.gnu.org/gnu/mpc/"
 LIBC_URL="http://download.savannah.gnu.org/releases/avr-libc/"
-LIBUSB_URL="https://github.com/libusb/libusb/releases/download/v1.0.22/"
+LIBUSB_URL="https://github.com/libusb/libusb/releases/download/v1.0.23/"
 AVRDUDE_URL="http://download.savannah.gnu.org/releases/avrdude/"
 
 #filenames for downloads
-BINUTILS_FILE=binutils-2.31.1.tar.gz
-GCC_FILE=gcc-8.2.0.tar.gz
+BINUTILS_FILE=binutils-2.32.tar.gz
+GCC_FILE=gcc-9.2.0.tar.gz
 GMP_FILE=gmp-6.1.2.tar.bz2
-MPFR_FILE=mpfr-4.0.1.tar.bz2
+MPFR_FILE=mpfr-4.0.2.tar.bz2
 MPC_FILE=mpc-1.1.0.tar.gz
 LIBC_FILE=avr-libc-2.0.0.tar.bz2
-LIBUSB_FILE=libusb-1.0.22.tar.bz2
+LIBUSB_FILE=libusb-1.0.23.tar.bz2
 AVRDUDE_FILE=avrdude-6.3.tar.gz
 
 OUTDIR=$(CURDIR)/outdir
